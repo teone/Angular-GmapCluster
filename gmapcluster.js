@@ -18,14 +18,16 @@ app.directive('googleMaps', function () {
 		    mapTypeId: "@",      // roadmap, satellite, hybrid, or terrain
 		    cluster: "@",
 		    clusteropt: "=",
-		    singlePic: "&",
+		    callback: "&",
 		    icon: "@"
 		  },
     	link: function (scope, element, attrs) {
 			var toResize, toCenter;
 			var map;
 			var currentMarkers;
-			console.log(scope.clusteropt)
+			
+
+
 			// listen to changes in scope variables and update the control
 			var arr = ["width", "height", "markers", "mapTypeId"];
 			for (var i = 0, cnt = arr.length; i < arr.length; i++) {
@@ -78,6 +80,8 @@ app.directive('googleMaps', function () {
             // update map markers to match scope marker collection
             function updateMarkers() {
                 if (map && scope.markers) {
+                	
+                	
 
                     // clear old markers
                     if (currentMarkers != null) {
@@ -86,7 +90,7 @@ app.directive('googleMaps', function () {
                         }
                     }
                     var markers = scope.markers;
-                    if(!scope.cluster){
+                    if(!scope.cluster || scope.cluster == "false"){
                     	// create new markers
 	                    currentMarkers = [];
 	                    
@@ -94,9 +98,13 @@ app.directive('googleMaps', function () {
 	                    for (var i = 0; i < markers.length; i++) {
 	                        var m = markers[i];
 	                        var loc = new google.maps.LatLng(m.latitude, m.longitude);
-	                        var mm = new google.maps.Marker({ position: loc, map: map, title: m.name, id: m.id, icon: scope.icon });
-	                        currentMarkers.push(mm);
+	                        var marker = new google.maps.Marker({ position: loc, map: map, title: m.name, id: m.id, icon: scope.icon });
+	                        currentMarkers.push(marker);
 	                        scope.mybound.extend(loc);
+
+	                        //bind Click
+	                        if(scope.callback)
+				          		addListener(marker, m);
 	                    }
                     }
                     else{
@@ -109,11 +117,10 @@ app.directive('googleMaps', function () {
 				          currentMarkers.push(marker);
 				          scope.mybound.extend(loc);
 
-				          google.maps.event.addListener(marker, 'click', function() {
-						    scope.singlePic(m.id);
-						  });
+				          //bind Click
+				          if(scope.callback)
+				          	addListener(marker, m);
 				        }
-				        console.log(scope.clusteropt);
 				        if(currentMarkers.length > 0)
 				        	var markerCluster = new MarkerClusterer(map, currentMarkers, scope.clusteropt);
                     }
@@ -121,6 +128,15 @@ app.directive('googleMaps', function () {
                     map.fitBounds(scope.mybound);
                     
                 }
+            }
+
+            function addListener(marker, m){
+            	google.maps.event.addListener(marker, 'click', function() {
+				          	console.log(m.id);
+				          	console.log(scope.callback);
+						    scope.callback({id: m.id});
+						    console.info('aaa');
+						  });
             }
 
 	    }
