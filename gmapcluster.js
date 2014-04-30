@@ -55,9 +55,10 @@ app.directive('googleMaps', function () {
 			});*/
 
 			function updateControl () {
+
 				// get map options
 				var options = {
-				    center: new google.maps.LatLng(40, -73),
+				    center: new google.maps.LatLng(45.698264, 9.67727),
 				    zoom: 10,
 				    mapTypeId: "roadmap"
 				};
@@ -65,14 +66,14 @@ app.directive('googleMaps', function () {
 				if (scope.zoom) options.zoom = scope.zoom * 1;
   				if (scope.mapTypeId) options.mapTypeId = scope.mapTypeId;
 
-  				map = new google.maps.Map(element[0], scope.options);
+  				map = new google.maps.Map(element[0], options);
 
   				updateMarkers();
 			}
 
 			// convert current location to Google maps location
             function getLocation(loc) {
-                if (loc == null) return new google.maps.LatLng(40, -73);
+                if (loc == null) return new google.maps.LatLng(45.698264, 9.67727);
                 if (angular.isString(loc)) loc = scope.$eval(loc);
                 return new google.maps.LatLng(loc.lat, loc.lon);
             }
@@ -81,7 +82,7 @@ app.directive('googleMaps', function () {
             function updateMarkers() {
                 if (map && scope.markers) {
                 	
-                	
+                	var fitBounds = false;
 
                     // clear old markers
                     if (currentMarkers != null) {
@@ -101,6 +102,8 @@ app.directive('googleMaps', function () {
 	                        var marker = new google.maps.Marker({ position: loc, map: map, title: m.name, id: m.id, icon: scope.icon });
 	                        currentMarkers.push(marker);
 	                        scope.mybound.extend(loc);
+	                        if(i>0)
+	                        	fitBounds = true;
 
 	                        //bind Click
 	                        if(scope.callback)
@@ -117,6 +120,9 @@ app.directive('googleMaps', function () {
 				          currentMarkers.push(marker);
 				          scope.mybound.extend(loc);
 
+				          if(i>0)
+				          	fitBounds = true;
+
 				          //bind Click
 				          if(scope.callback)
 				          	addListener(marker, m);
@@ -125,7 +131,8 @@ app.directive('googleMaps', function () {
 				        	var markerCluster = new MarkerClusterer(map, currentMarkers, scope.clusteropt);
                     }
 
-                    map.fitBounds(scope.mybound);
+                    if(fitBounds)
+                    	map.fitBounds(scope.mybound);
                     
                 }
             }
